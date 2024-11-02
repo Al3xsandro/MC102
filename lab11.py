@@ -97,30 +97,33 @@ def move(matrix, direction, pivot_x, pivot_y):
 
 def verify_prototype(x, y, item: str, selected_prototype):
     itens = item.split(',')
-    
+
     for item in itens:
         if item in ELEMENTOS:
             if selected_prototype in ELEMENTOS[item][0]:
                 return
             else: 
                 return f"{x},{y}:{item}"
-            
         if TERRENO_PROTO.get(selected_prototype):
             if item in TERRENO_PROTO[selected_prototype][0]:
                 return 
             if item in TERRENO_PROTO[selected_prototype][1]:
                 return
-            
-        if TERRENO_ADJACENCIA.get(selected_prototype):
-            if item in TERRENO_ADJACENCIA[selected_prototype][0]:
-                return
-            if item in TERRENO_ADJACENCIA[selected_prototype][1]:
-                return
         
         return f"{x},{y}:{item}"
 
-def verify_neighbors(x, y, matrix):
-    pass
+def verify_neighbors(pivot_axis, neighbors, matrix):
+    itens = []
+    pivot = matrix[pivot_axis[0]][pivot_axis[1]].split(',')[0]
+    for neighbor in neighbors:
+       itens.append([matrix[neighbor[0]][neighbor[1]], neighbor])
+    
+    for item in itens:
+        terrain = item[0].split(',')[0]
+        if TERRENO_ADJACENCIA.get(pivot):
+            if not terrain in TERRENO_ADJACENCIA[pivot]:
+                return f"{pivot_axis[0]},{pivot_axis[1]}:{pivot}"         
+
 
 def validate(matrix, selected_prototype):
     rule_one_errors = set()
@@ -128,22 +131,20 @@ def validate(matrix, selected_prototype):
     rule_three_errors = set()
 
     for i in range(0, len(matrix)):
-        for j in range(0, len(matrix)):
+        for j in range(0, len(matrix[0])):
+            neighbors = []
             for direction in ["O", "L", "N", "S"]:
                 x, y = move(matrix, direction, i, j)
+                neighbors.append([x, y])
 
                 # rule 1
                 is_valid_prototype = verify_prototype(x, y, matrix[x][y], selected_prototype)
                 if is_valid_prototype:
                     rule_one_errors.add(is_valid_prototype)
             
-            # rule 2
-            for direction in ["O", "L", "N", "S"]:
-                x, y = move(matrix, direction, i, j)
-
-                is_valid_neighbor = verify_neighbors(x, y, matrix)
-                if is_valid_neighbor:
-                    rule_two_errors.add(is_valid_neighbor)
+            is_valid_neighbor = verify_neighbors([i, j], neighbors, matrix)
+            if is_valid_neighbor:
+                rule_two_errors.add(is_valid_neighbor)
                 
 
     rule_one_errors = sorted(list(rule_one_errors))
@@ -190,24 +191,19 @@ def main():
           break
             
 def test():
-    prototype_id = 'PO'
+    prototype_id = 'PTR'
     x = 4
     y = 4
 
-    MOCK_SECTORS = [
-        "TO2     TO2,AMM TO2,AMM     TO1,AAL",
-        "TO2     TO1,AAL TO1,AAL     TO1,AAL",
-        "TO2,AMM TO1,AAL TAR,ACR,AAL TM",
-        "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL",
-        # mock
-        # "TO2     TO2,AMM TO2,AMM     TO1,AAL TO1,AAL TO2,AMM",
-        # "TO2     TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-        # "TO2,AMM TO1,AAL TAR,ACR,AAL TM      TAR,ACR TO1,AMM",
-        # "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-        # "TO2     TO1,AAL TAR,ACR,AAL TO1,AAL TAR,AAL TO1,AMM",
-        # "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-        # "TO2,AMM TO2,AMM TO2,AMM     TO2     TO2,AMM TO2,AMM"
-      ]
+    # MOCK_SECTORS = [
+    #     "TO2     TO2,AMM TO2,AMM     TO1,AAL TO1,AAL TO2,AMM",
+    #     "TO2     TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
+    #     "TO2,AMM TO1,AAL TAR,ACR,AAL TM      TAR,ACR TO1,AMM",
+    #     "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
+    #     "TO2     TO1,AAL TAR,ACR,AAL TO1,AAL TAR,AAL TO1,AMM",
+    #     "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
+    #     "TO2,AMM TO2,AMM TO2,AMM     TO2     TO2,AMM TO2,AMM"
+    # ]
     
     # MOCK_SECTORS_2 = [
     #   "TD,ARO      TD,ARO,CTA2 TD       TA2     TA2,CTA1 TD,CTA1",
@@ -219,15 +215,15 @@ def test():
     #   "TD,CTA2     TD,ARO      TD,CTA2  TD,ARO  TD,AMA   TD,AMA"
     # ]
 
-    # MOCK_SECTORS_3 = [
-    #   "TM,SL,APE   TM        TP,AHQ   TP,AHQ    TP,AHQ",
-    #   "TM          TP,SL,AHQ,APE  TP,AHQ    TP,AHQ   TP,AHQ",
-    #   "TM          TP,SL,AHQ,APE  TP,SL,AHQ,APE  TM    TAR,ACR",
-    #   "TM          TP,AHQ    TAR,AAL    TO1,AMM,APE   TAR,AHQ",
-    #   "TM          TP,AHQ    TAR,ACR,AAL   TP,AHQ   TP,AAL"
-    # ]
+    MOCK_SECTORS_3 = [
+      "TM,SL,APE   TM        TP,AHQ   TP,AHQ    TP,AHQ",
+      "TM TP,SL,AHQ,APE  TP,AHQ    TP,AHQ   TP,AHQ",
+      "TM TP,SL,AHQ,APE  TP,SL,AHQ,APE  TM    TAR,ACR",
+      "TM TP,AHQ    TAR,AAL    TO1,AMM,APE   TAR,AHQ",
+      "TM TP,AHQ    TAR,ACR,AAL   TP,AHQ   TP,AAL"
+    ]
 
-    sectors = [list(filter(None, sector.split(' '))) for sector in MOCK_SECTORS]
+    sectors = [list(filter(None, sector.split(' '))) for sector in MOCK_SECTORS_3]
     validate(sectors, prototype_id)
 
 # main()
