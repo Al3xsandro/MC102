@@ -124,6 +124,21 @@ def verify_neighbors(pivot_axis, neighbors, matrix):
             if not terrain in TERRENO_ADJACENCIA[pivot]:
                 return f"{pivot_axis[0]},{pivot_axis[1]}:{pivot}"         
 
+def verify_weather_conditions(pivot_axis, matrix, selected_prototype):
+        elements = matrix[pivot_axis[0]][pivot_axis[1]].split(',')
+        pivot = elements[0]
+        for idx in range(1, len(elements)):
+            if selected_prototype not in ELEMENTOS[elements[idx]][0]:
+                return f"{pivot_axis[0]},{pivot_axis[1]}:{pivot}"
+            
+            for idx, _ in enumerate(elements[1:]):
+                if pivot not in ELEMENTOS[elements[idx + 1]][1]:
+                    if elements[idx] in ELEMENTOS[elements[-1]][1]:
+                        return
+                    return f"{pivot_axis[0]},{pivot_axis[1]}:{pivot}"
+                else:
+                    if elements[idx] in ELEMENTOS[elements[-1]][1]:
+                        return
 
 def validate(matrix, selected_prototype):
     rule_one_errors = set()
@@ -145,6 +160,10 @@ def validate(matrix, selected_prototype):
             is_valid_neighbor = verify_neighbors([i, j], neighbors, matrix)
             if is_valid_neighbor:
                 rule_two_errors.add(is_valid_neighbor)
+            
+            is_valid_weather_condition = verify_weather_conditions([i, j], matrix, selected_prototype)
+            if is_valid_weather_condition:
+                rule_three_errors.add(is_valid_weather_condition)
                 
 
     rule_one_errors = sorted(list(rule_one_errors))
@@ -174,36 +193,31 @@ def validate(matrix, selected_prototype):
 
 def main():
     sectors = []
+    prototype_id = None
+    x = None
+    y = None
 
     while True:
-        prototype_id = None
-        x = None
-        y = None
-
-        if not prototype_id and not x and not y:
+        if not prototype_id:
             prototype_id = input()
+        if not x and not y:
             x, y = input().split(' ')
-        
-        sectors.append(list(filter(None, input.split(' '))))
+
+        sectors.append(list(filter(None, input().split(' '))))
         
         if len(sectors) == int(x):
           validate(sectors, prototype_id)
           break
             
 def test():
-    prototype_id = 'PTR'
+    prototype_id = 'PC'
     x = 4
     y = 4
 
-    # MOCK_SECTORS = [
-    #     "TO2     TO2,AMM TO2,AMM     TO1,AAL TO1,AAL TO2,AMM",
-    #     "TO2     TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-    #     "TO2,AMM TO1,AAL TAR,ACR,AAL TM      TAR,ACR TO1,AMM",
-    #     "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-    #     "TO2     TO1,AAL TAR,ACR,AAL TO1,AAL TAR,AAL TO1,AMM",
-    #     "TO2,AMM TO1,AAL TO1,AAL     TO1,AAL TO1,AAL TO2",
-    #     "TO2,AMM TO2,AMM TO2,AMM     TO2     TO2,AMM TO2,AMM"
-    # ]
+    MOCK_SECTORS = [
+        "TM,CN3      TM,CN3      TM,CN3     TM,CN3,ACR  TM,CN3,ACR  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TC,CN2      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3",
+       "TM,CN3      TM,CN3      TM,CN3      TM,CN3,ACR  TM,CN3,ACR  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TC,CN2      TC,CN2      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TP,CC0,AFE  TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3      TM,CN3",
+    ]
     
     # MOCK_SECTORS_2 = [
     #   "TD,ARO      TD,ARO,CTA2 TD       TA2     TA2,CTA1 TD,CTA1",
@@ -217,14 +231,14 @@ def test():
 
     MOCK_SECTORS_3 = [
       "TM,SL,APE   TM        TP,AHQ   TP,AHQ    TP,AHQ",
-      "TM TP,SL,AHQ,APE  TP,AHQ    TP,AHQ   TP,AHQ",
-      "TM TP,SL,AHQ,APE  TP,SL,AHQ,APE  TM    TAR,ACR",
-      "TM TP,AHQ    TAR,AAL    TO1,AMM,APE   TAR,AHQ",
-      "TM TP,AHQ    TAR,ACR,AAL   TP,AHQ   TP,AAL"
+      "TM TP,SL,AHQ,APE TP,AHQ        TP,AHQ      TP,AHQ",
+      "TM TP,SL,AHQ,APE TP,SL,AHQ,APE TM          TAR,ACR",
+      "TM TP,AHQ        TAR,AAL       TO1,AMM,APE TAR,AHQ",
+      "TM TP,AHQ        TAR,ACR,AAL   TP,AHQ      TP,AAL"
     ]
 
-    sectors = [list(filter(None, sector.split(' '))) for sector in MOCK_SECTORS_3]
+    sectors = [list(filter(None, sector.split(' '))) for sector in MOCK_SECTORS]
     validate(sectors, prototype_id)
 
-# main()
-test()
+main()
+# test()
