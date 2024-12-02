@@ -26,27 +26,27 @@ def mover(matrix, pivot_x, pivot_y, direction):
     else:
         return None, None
 
-def caminho(detetive, matriz, pistas, visitados = None):
-    pistas = set()
-    x, y = detetive
-
+def percorrer_matrix(detetive, matriz, pistas=None, visitados=None):
+    if pistas is None:
+        pistas = set()
     if visitados is None:
         visitados = set()
 
-    new_direction = matriz[new_x][new_y]
+    x, y = detetive
+    visitados.add((x, y))
+    new_direction = matriz[x][y]
 
     if new_direction == "#":
-        return False
+        return pistas
 
-    if new_direction != ".":
+    if new_direction != "." and new_direction != "#" and new_direction != "D":
         pistas.add(int(new_direction))
-        return False
-     
+
     for direction in ["O", "L", "N", "S"]:
         new_x, new_y = mover(matriz, x, y, direction)
+
         if new_x is not None and new_y is not None and (new_x, new_y) not in visitados:
-            if caminho(detetive, matriz, pistas, visitados = None):
-                return pistas
+            percorrer_matrix((new_x, new_y), matriz, pistas, visitados)
 
     return pistas
 
